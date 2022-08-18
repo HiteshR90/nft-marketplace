@@ -1,15 +1,13 @@
 module.exports = {
-  
-
   networks: {
     development:{
-      host:"HTTP://127.0.0.1",
+      host:"127.0.0.1",
       port:8545,
       network_id:"*"
     }
   },
-  contract_directory: "./src/contracts",
-  contract_build_directory: "./src/abis",
+  contracts_directory: "./src/contracts/",
+  contracts_build_directory: "./src/abis/",
 
   // Configure your compilers
   compilers: {
