@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import './ERC165.sol';
+import './interfaces/IERC721.sol';
 
-contract ERC721 {
-
-    event Transfer(
-                address indexed from, 
-                address indexed to, 
-                uint256 indexed tokenId);
+contract ERC721 is ERC165, IERC721 {
 
     //mapping from token id to owner
     mapping (uint256 => address) private _tokenOwner;
@@ -17,6 +14,12 @@ contract ERC721 {
 
     //mapping from token id to approve addresses
     mapping(uint256 => address) private _tokenApprovals;
+
+    constructor () {
+        _registerInterface(bytes4(keccak256('balanceOf(bytes4)')
+                                ^keccak256('ownerOf(bytes4)')
+                                ^keccak256('transferFrom(bytes4)')));
+    }
 
     function balanceOf(address _owner) public view returns(uint256) {
         require(_owner != address(0), 'Owner query for non-existnce token');
@@ -69,7 +72,23 @@ contract ERC721 {
         emit Transfer(_from, _to, _tokenId);
     }
 
-    function transferFrom(address _from, address _to, uint256 _tokenId) public {
+    function transferFrom(address _from, address _to, uint256 _tokenId) public{
+        require(isApprovedOrOwner(msg.sender, _tokenId));
         _transferFrom(_from, _to, _tokenId);
+    }
+
+   function approve(address _to, uint256 _tokenId) public {
+        address owner = ownerOf(_tokenId);
+        require(msg.sender == owner, 'Current caller is not the owner of the token');
+        require(owner!= _to, 'Error - approval to current owner');
+        _tokenApprovals[_tokenId] = _to;
+
+        emit Approval(owner, _to, _tokenId);
+    }
+
+    function isApprovedOrOwner(address spender, uint tokenId) internal view returns (bool){
+        require(_exist(tokenId), 'Token does not exist');
+        address owner = ownerOf(tokenId);
+        return (spender == owner);
     }
 }
